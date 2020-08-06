@@ -14,7 +14,6 @@ import matplotlib.pyplot as plt
 # def translate(sequence):
 #     return ' '.join([reverse_word_index.get(i - 3, '?') for i in sequence])
 
-
 def vectorize_sequences(sequences, dimention=10000):
     results = np.zeros((len(sequences), dimention))
     for i, sequence in enumerate(sequences):
