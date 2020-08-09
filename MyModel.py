@@ -1,3 +1,4 @@
+from keras.models import load_model
 import DataGenerator
 from keras import layers
 from keras import models
@@ -71,5 +72,18 @@ def build(img_shape = (64, 64, 1), charset_size=100):
     return model
 
 
-model = build(charset_size=10)
-train(model)
+
+
+
+
+# 加载model
+model = load_model('char_recognition.h5')
+
+dg = DataGenerator.DataGenerator()
+
+# dg.pick_small_dataset(char_number=charset_size, picked_number=pickedNumber, validation_rate=validationRate)
+train_generator, validation_generator, test_generator = dg.data_gen(batchSize=32)
+
+test_loss, test_acc = model.evaluate(test_generator, steps=18)
+
+print('test acc: ', test_acc)
