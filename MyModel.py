@@ -6,14 +6,21 @@ from keras import optimizers
 import matplotlib.pyplot as plt
 
 tot_char = 3755
-_steps_per_epoch = 52
-_epochs = 100
-_validation_steps = 20
+_epochs = 200
+test_samples_per_class = 60
 
-def train(model, img_size = (64, 64), charset_size=10, validationRate = 0.3, pickedNumber = 240):
+def train(model, img_size = (64, 64), charset_size=3755, validationRate = 0.3, pickedNumber = 240, batch_size = 128):
     dg = DataGenerator.DataGenerator()
-    dg.pick_small_dataset(char_number=charset_size, picked_number=pickedNumber, validation_rate=validationRate)
-    train_generator, validation_generator, test_generator = dg.data_gen(batchSize=32)
+    train_sample_count = dg.pick_small_dataset(char_number=charset_size, picked_number=pickedNumber, validation_rate=validationRate)
+    train_generator, validation_generator, test_generator = dg.data_gen(batchSize=batch_size)
+
+    _steps_per_epoch = charset_size * train_sample_count // batch_size
+    _validation_steps = charset_size * (pickedNumber - train_sample_count) // batch_size
+
+    # print(_steps_per_epoch)
+    # print(_validation_steps)
+
+    # return
 
     model.compile(loss='categorical_crossentropy',
         optimizer='rmsprop',
@@ -30,6 +37,8 @@ def train(model, img_size = (64, 64), charset_size=10, validationRate = 0.3, pic
 
     display(history)
 
+    return test_generator, charset_size * test_samples_per_class // batch_size
+  
 def display(history):
     acc = history.history['acc']
     val_acc = history.history['val_acc']
@@ -54,7 +63,7 @@ def display(history):
 
     
 
-def build(img_shape = (64, 64, 1), charset_size=100):
+def build(img_shape = (64, 64, 1), charset_size=3755):
     model = models.Sequential()
     model.add(layers.Conv2D(32, (3, 3), activation='relu', input_shape=img_shape))
     model.add(layers.MaxPool2D(2, 2))
@@ -77,13 +86,19 @@ def build(img_shape = (64, 64, 1), charset_size=100):
 
 
 # 加载model
-model = load_model('char_recognition.h5')
+# model = load_model('char_recognition.h5')
 
-dg = DataGenerator.DataGenerator()
+# dg = DataGenerator.DataGenerator()
 
-# dg.pick_small_dataset(char_number=charset_size, picked_number=pickedNumber, validation_rate=validationRate)
-train_generator, validation_generator, test_generator = dg.data_gen(batchSize=32)
+# # dg.pick_small_dataset(char_number=charset_size, picked_number=pickedNumber, validation_rate=validationRate)
+# train_generator, validation_generator, test_generator = dg.data_gen(batchSize=32)
 
-test_loss, test_acc = model.evaluate(test_generator, steps=18)
+# test_loss, test_acc = model.evaluate(test_generator, steps=18)
 
+# print('test acc: ', test_acc)
+
+model = build(charset_size=50)
+test_generator, _steps = train(model, charset_size=50)
+
+test_loss, test_acc = model.evaluate(test_generator, steps=_steps)
 print('test acc: ', test_acc)

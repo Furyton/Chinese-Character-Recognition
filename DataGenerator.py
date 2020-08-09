@@ -40,10 +40,13 @@ class DataGenerator:
         if self.ch_num_dict is None:
             self.load_class_list()
         
+        validation_count = (int)(picked_number * validation_rate)
+        train_count = picked_number - validation_count
+
         if os.path.exists(base_data_dir):
             if not ignoreExistence:
                 print("文件夹已存在,操作取消")
-                return
+                return train_count
             else:
                 shutil.rmtree(base_data_dir)
 
@@ -61,8 +64,6 @@ class DataGenerator:
         # [train and validation]
         original_train = os.path.join(original_data_dir, 'train')
 
-        validation_count = (int)(picked_number * validation_rate)
-        train_count = picked_number - validation_count
         
         ClassFileList = [name for name in os.listdir(original_train)if os.path.isdir(os.path.join(original_train, name))][:char_number]
         self.cur_charset = ClassFileList
@@ -116,6 +117,8 @@ class DataGenerator:
 
                 cnt += 1
 
+        return train_count
+
     def data_gen(self, base_dir = base_data_dir, batchSize = 512, targetSize = (64, 64)):
         if not os.path.exists(base_dir):
             print("数据集所在目录不存在")
@@ -146,6 +149,7 @@ class DataGenerator:
             color_mode='grayscale',
             classes=self.cur_charset
         )
+
         validation_generator = test_datagen.flow_from_directory(
             validation_dir,
             target_size=targetSize,
