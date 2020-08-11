@@ -7,8 +7,11 @@ import matplotlib.pyplot as plt
 from keras.preprocessing.image import ImageDataGenerator
 from keras.preprocessing import image
 
+# CASIA-Classes文件存放的位置
 class_list_dir = "C:/Users/Furyton/Documents/Machine Learning/Original_dataset/CASIA-Classes.txt"
+# 原始图片数据集的位置, 里面是train和test目录
 original_data_dir = "C:/Users/Furyton/Documents/Machine Learning/Original_dataset"
+# 新选出的数据集存放的根目录
 base_data_dir = "C:/Users/Furyton/Documents/Machine Learning/small_dataset"
 
 
@@ -65,7 +68,7 @@ class DataGenerator:
         original_train = os.path.join(original_data_dir, 'train')
 
         
-        ClassFileList = [name for name in os.listdir(original_train)if os.path.isdir(os.path.join(original_train, name))][:char_number]
+        ClassFileList = self.ch_num_dict.items()[:char_number]
         self.cur_charset = ClassFileList
 
         for fileName in ClassFileList:
@@ -120,6 +123,9 @@ class DataGenerator:
         return train_count
 
     def data_gen(self, base_dir = base_data_dir, batchSize = 512, targetSize = (64, 64)):
+        # base_dir 新选出的数据集(包括训练集等)存放的根目录
+        # batchSize: 批的大小
+        # targetSize: 将所有图片调整大小
         if not os.path.exists(base_dir):
             print("数据集所在目录不存在")
             return
@@ -150,7 +156,8 @@ class DataGenerator:
             classes=self.cur_charset
         )
 
-        validation_generator = test_datagen.flow_from_directory(
+        validation_generator = test_datagen.flow_from_directory( 
+            # 验证集是在训练过程中做测试用,所以用的是test_datagen训练集的数据生成器, 没有做增强
             validation_dir,
             target_size=targetSize,
             batch_size=batchSize,

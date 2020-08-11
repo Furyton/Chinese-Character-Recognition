@@ -4,12 +4,21 @@ from keras import layers
 from keras import models
 from keras import optimizers
 import matplotlib.pyplot as plt
+from keras.callbacks import ReduceLROnPlateau
 
 tot_char = 3755
 _epochs = 200
 test_samples_per_class = 60
 
-def train(model, img_size = (64, 64), charset_size=3755, validationRate = 0.3, pickedNumber = 240, batch_size = 128):
+model_path = 'char_recognition.h5'
+
+
+# initial_lr: 最开始的学习率
+# charset_size 想要分类的汉字种类数目
+# validationRate 验证集的比例
+# pickedNumber: 每一个汉字训练集里取出多少图片(每一个总共有240个) 
+# batch_size:每一个批的大小
+def train(model, initial_lr = 0.001, img_size = (64, 64), charset_size=3755, validationRate = 0.3, pickedNumber = 240, batch_size = 128):
     dg = DataGenerator.DataGenerator()
     train_sample_count = dg.pick_small_dataset(char_number=charset_size, picked_number=pickedNumber, validation_rate=validationRate)
     train_generator, validation_generator, test_generator = dg.data_gen(batchSize=batch_size)
@@ -17,28 +26,27 @@ def train(model, img_size = (64, 64), charset_size=3755, validationRate = 0.3, p
     _steps_per_epoch = charset_size * train_sample_count // batch_size
     _validation_steps = charset_size * (pickedNumber - train_sample_count) // batch_size
 
-    # print(_steps_per_epoch)
-    # print(_validation_steps)
-
-    # return
-
     model.compile(loss='categorical_crossentropy',
-        optimizer='rmsprop',
+        optimizer=optimizers.RMSprop(learning_rate=initial_lr),
         metrics=['acc'])
     
+    reduce_lr = ReduceLROnPlateau(monitor='val_loss', patience=10, mode='auto')
+
     history = model.fit(
         train_generator,
         steps_per_epoch = _steps_per_epoch,
         epochs = _epochs,
         validation_data = validation_generator,
-        validation_steps = _validation_steps
+        validation_steps = _validation_steps,
+        callbacks=[reduce_lr]
     )
-    model.save('char_recognition.h5')
+    model.save(model_path)
 
     display(history)
 
-    return test_generator, charset_size * test_samples_per_class // batch_size
+    return test_generator, charset_size * test_samples_per_class // batch_size # 这个参数是model.evaluate()里 steps参数的值
   
+# 训练后展示准确率以及损失变化情况
 def display(history):
     acc = history.history['acc']
     val_acc = history.history['val_acc']
@@ -62,6 +70,7 @@ def display(history):
     plt.show()
 
     
+# 注意这里的charset_size一定要与 train里的charset_size相同
 
 def build(img_shape = (64, 64, 1), charset_size=3755):
     model = models.Sequential()
@@ -86,19 +95,17 @@ def build(img_shape = (64, 64, 1), charset_size=3755):
 
 
 # 加载model
-# model = load_model('char_recognition.h5')
+model = load_model('char_recognition.h5')
 
-# dg = DataGenerator.DataGenerator()
+dg = DataGenerator.DataGenerator()
 
-# # dg.pick_small_dataset(char_number=charset_size, picked_number=pickedNumber, validation_rate=validationRate)
-# train_generator, validation_generator, test_generator = dg.data_gen(batchSize=32)
+# dg.pick_small_dataset(char_number=charset_size, picked_number=pickedNumber, validation_rate=validationRate)
 
-# test_loss, test_acc = model.evaluate(test_generator, steps=18)
 
+
+
+# model = build(charset_size=50)
+# test_generator, _steps = train(model, charset_size=50)
+
+# test_loss, test_acc = model.evaluate(test_generator, steps=_steps)
 # print('test acc: ', test_acc)
-
-model = build(charset_size=50)
-test_generator, _steps = train(model, charset_size=50)
-
-test_loss, test_acc = model.evaluate(test_generator, steps=_steps)
-print('test acc: ', test_acc)
