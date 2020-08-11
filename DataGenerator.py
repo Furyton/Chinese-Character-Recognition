@@ -17,8 +17,8 @@ base_data_dir = "C:/Users/Furyton/Documents/Machine Learning/small_dataset"
 
 class DataGenerator:
     def __init__(self):
-        self.ch_num_dict = {} # a dict from character to its order
-        self.num_ch_dict = {} # a dict from order to its charactor
+        self.ch_num_dict = None # a dict from character to its order
+        self.num_ch_dict = None # a dict from order to its charactor
 
         self.cur_charset = None
     # load file "CASIA-Classes.txt"
@@ -39,7 +39,7 @@ class DataGenerator:
         # char_number 想要训练的汉字种类大小
         # picked_number 每个种类的汉字选出样本图片的数目
         # validation_rate 验证集占训练集的比例
-        # ignoreExistence 当已经存在  base_data_dir 时是否继续(若存在则删除)
+        # ignoreExistence=True 当已经存在  base_data_dir 时是否继续(若存在则删除)
         if self.ch_num_dict is None:
             self.load_class_list()
         
@@ -68,7 +68,7 @@ class DataGenerator:
         original_train = os.path.join(original_data_dir, 'train')
 
         
-        ClassFileList = self.ch_num_dict.items()[:char_number]
+        ClassFileList = [self.num_ch_dict[key] for key in range(char_number)]
         self.cur_charset = ClassFileList
 
         for fileName in ClassFileList:
@@ -176,10 +176,10 @@ class DataGenerator:
 
         return train_generator, validation_generator, test_generator
 
-# test = DataGenerator()
+test = DataGenerator()
 
 # test.load_class_list()
-# test.pick_small_dataset(char_number=20, picked_number=10, validation_rate=0, ignoreExistence=False)
+test.pick_small_dataset()
 
 # gen = test.data_gen()
 
