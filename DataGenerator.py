@@ -176,10 +176,10 @@ class DataGenerator:
 
         return train_generator, validation_generator, test_generator
 
-test = DataGenerator()
+# test = DataGenerator()
 
 # test.load_class_list()
-test.pick_small_dataset()
+# test.pick_small_dataset()
 
 # gen = test.data_gen()
 

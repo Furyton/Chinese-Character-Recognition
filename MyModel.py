@@ -2,9 +2,12 @@ from keras.models import load_model
 import DataGenerator
 from keras import layers
 from keras import models
+from keras.models import Model
 from keras import optimizers
 import matplotlib.pyplot as plt
 from keras.callbacks import ReduceLROnPlateau
+from keras.applications.resnet50 import ResNet50
+from keras.applications.vgg16 import VGG16
 
 tot_char = 3755
 _epochs = 200
@@ -72,7 +75,24 @@ def display(history):
     
 # 注意这里的charset_size一定要与 train里的charset_size相同
 
-def build(img_shape = (64, 64, 1), charset_size=3755):
+def build(model_type = None, img_shape=(64, 64, 1), charset_size=3755):
+    if model_type == 'resnet50':
+        base_model = ResNet50(include_top=True, weights=None)
+        base_model = models.Sequential(input = base_model.input, output=base_model.get_layer(index=175).output)
+
+        base_model.add(layers.Dropout(0.3))
+        base_model.add(layers.Dense(512, activation='relu'))
+        base_model.add(layers.Dense(charset_size, activation='softmax'))
+        return base_model
+    elif model_type == 'vgg16':
+        base_model = VGG16(include_top=True, weights=None)
+        base_model = models.Sequential(input = base_model.input, output=base_model.get_layer(index=21).output)
+        
+        base_model.add(layers.Dropout(0.3))
+        base_model.add(layers.Dense(512, activation='relu'))
+        base_model.add(layers.Dense(charset_size, activation='softmax'))
+        return base_model
+
     model = models.Sequential()
     model.add(layers.Conv2D(32, (3, 3), activation='relu', input_shape=img_shape))
     model.add(layers.MaxPool2D(2, 2))
@@ -83,7 +103,7 @@ def build(img_shape = (64, 64, 1), charset_size=3755):
     model.add(layers.Conv2D(128, (3, 3), activation='relu'))
     model.add(layers.MaxPool2D(2, 2))
     model.add(layers.Flatten())
-    model.add(layers.Dropout(0.5))
+    model.add(layers.Dropout(0.3))
     model.add(layers.Dense(1024, activation='relu'))
     model.add(layers.Dense(charset_size, activation='softmax'))
 
@@ -91,13 +111,20 @@ def build(img_shape = (64, 64, 1), charset_size=3755):
 
 
 
+char_num = 15
+model = build('vgg16', charset_size=char_num)
 
+testgen, _step = train(model, charset_size=char_num, batch_size=28, pickedNumber=100)
 
+test_loss, test_acc = model.evaluate(testgen, steps = _step)
+
+print('test acc: ', test_acc)
+print('test loss: ', test_loss)
 
 # 加载model
-model = load_model('char_recognition.h5')
+# model = load_model('char_recognition.h5')
 
-dg = DataGenerator.DataGenerator()
+# dg = DataGenerator.DataGenerator()
 
 # dg.pick_small_dataset(char_number=charset_size, picked_number=pickedNumber, validation_rate=validationRate)
 
