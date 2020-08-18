@@ -122,7 +122,7 @@ class DataGenerator:
 
         return train_count
 
-    def data_gen(self, base_dir = base_data_dir, batchSize = 512, targetSize = (64, 64)):
+    def data_gen(self, base_dir = original_data_dir, batchSize = 512, targetSize = (64, 64)):
         # base_dir 新选出的数据集(包括训练集等)存放的根目录
         # batchSize: 批的大小
         # targetSize: 将所有图片调整大小
@@ -133,11 +133,11 @@ class DataGenerator:
             print("数据集所在目录不存在")
             return
         
-        train_dir = os.path.join(base_data_dir, 'train')
+        train_dir = os.path.join(base_dir, 'train')
         
         # validation_dir = os.path.join(base_data_dir, 'validation')
 
-        test_dir = os.path.join(base_data_dir, 'test')
+        test_dir = os.path.join(base_dir, 'test')
 
 
         train_datagen = ImageDataGenerator(

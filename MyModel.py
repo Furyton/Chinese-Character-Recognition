@@ -21,7 +21,7 @@ model_path = 'char_recognition.h5'
 # validationRate 验证集的比例
 # pickedNumber: 每一个汉字训练集里取出多少图片(每一个总共有240个) 
 # batch_size:每一个批的大小
-def train(model, initial_lr = 0.001, img_size = (64, 64), charset_size=3755, validationRate = 0.3, pickedNumber = 240, batch_size = 128):
+def train(model, initial_lr = 0.001, img_size = (64, 64), charset_size=3755, validationRate = 0.3, pickedNumber = 240, batch_size = 1024):
     dg = DataGenerator.DataGenerator()
     # train_sample_count = dg.pick_small_dataset(char_number=charset_size, picked_number=pickedNumber, validation_rate=validationRate)
     train_generator, test_generator = dg.data_gen(batchSize=batch_size)
@@ -41,7 +41,7 @@ def train(model, initial_lr = 0.001, img_size = (64, 64), charset_size=3755, val
         train_generator,
         steps_per_epoch = _steps_per_epoch,
         epochs = _epochs,
-        validation_split= validationRate,
+        # validation_split= validationRate,
         # validation_steps = _validation_steps,
         callbacks=[reduce_lr]
     )
@@ -79,7 +79,7 @@ def display(history):
 
 def build(model_type = None, img_shape=(64, 64, 1), charset_size=3755):
     if model_type == 'resnet50':
-        base_model = ResNet50(include_top=True, weights=None)
+        base_model = ResNet50(include_top=False, weights=None)
         base_model = models.Sequential(input = base_model.input, output=base_model.get_layer(index=175).output)
 
         base_model.add(layers.Dropout(0.3))
@@ -113,15 +113,15 @@ def build(model_type = None, img_shape=(64, 64, 1), charset_size=3755):
 
 
 
-char_num = 15
-model = build('vgg16', charset_size=char_num)
+# char_num = 15
+# model = build('vgg16', charset_size=char_num)
 
-testgen, _step = train(model, charset_size=char_num, batch_size=28, pickedNumber=100)
+# testgen, _step = train(model, charset_size=char_num, batch_size=28, pickedNumber=100)
 
-test_loss, test_acc = model.evaluate(testgen, steps = _step)
+# test_loss, test_acc = model.evaluate(testgen, steps = _step)
 
-print('test acc: ', test_acc)
-print('test loss: ', test_loss)
+# print('test acc: ', test_acc)
+# print('test loss: ', test_loss)
 
 # 加载model
 # model = load_model('char_recognition.h5')
@@ -133,8 +133,8 @@ print('test loss: ', test_loss)
 
 
 
-# model = build(charset_size=50)
-# test_generator, _steps = train(model, charset_size=50)
+model = build()
+test_generator, _steps = train(model)
 
-# test_loss, test_acc = model.evaluate(test_generator, steps=_steps)
-# print('test acc: ', test_acc)
+test_loss, test_acc = model.evaluate(test_generator, steps=_steps)
+print('test acc: ', test_acc)
