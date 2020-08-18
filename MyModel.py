@@ -23,11 +23,13 @@ model_path = 'char_recognition.h5'
 # batch_size:每一个批的大小
 def train(model, initial_lr = 0.001, img_size = (64, 64), charset_size=3755, validationRate = 0.3, pickedNumber = 240, batch_size = 128):
     dg = DataGenerator.DataGenerator()
-    train_sample_count = dg.pick_small_dataset(char_number=charset_size, picked_number=pickedNumber, validation_rate=validationRate)
-    train_generator, validation_generator, test_generator = dg.data_gen(batchSize=batch_size)
+    # train_sample_count = dg.pick_small_dataset(char_number=charset_size, picked_number=pickedNumber, validation_rate=validationRate)
+    train_generator, test_generator = dg.data_gen(batchSize=batch_size)
+
+    train_sample_count = charset_size * pickedNumber
 
     _steps_per_epoch = charset_size * train_sample_count // batch_size
-    _validation_steps = charset_size * (pickedNumber - train_sample_count) // batch_size
+    # _validation_steps = charset_size * (pickedNumber - train_sample_count) // batch_size
 
     model.compile(loss='categorical_crossentropy',
         optimizer=optimizers.RMSprop(learning_rate=initial_lr),
@@ -39,8 +41,8 @@ def train(model, initial_lr = 0.001, img_size = (64, 64), charset_size=3755, val
         train_generator,
         steps_per_epoch = _steps_per_epoch,
         epochs = _epochs,
-        validation_data = validation_generator,
-        validation_steps = _validation_steps,
+        validation_split= validationRate,
+        # validation_steps = _validation_steps,
         callbacks=[reduce_lr]
     )
     model.save(model_path)

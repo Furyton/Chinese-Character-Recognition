@@ -126,24 +126,27 @@ class DataGenerator:
         # base_dir 新选出的数据集(包括训练集等)存放的根目录
         # batchSize: 批的大小
         # targetSize: 将所有图片调整大小
+        if self.ch_num_dict is None:
+            self.load_class_list()
+        
         if not os.path.exists(base_dir):
             print("数据集所在目录不存在")
             return
         
         train_dir = os.path.join(base_data_dir, 'train')
         
-        validation_dir = os.path.join(base_data_dir, 'validation')
+        # validation_dir = os.path.join(base_data_dir, 'validation')
 
         test_dir = os.path.join(base_data_dir, 'test')
 
 
         train_datagen = ImageDataGenerator(
             rescale=1./255,
-            rotation_range=40,
-            width_shift_range=0.2,
-            height_shift_range=0.2,
-            shear_range=0.2,
-            zoom_range=0.2
+            # rotation_range=40,
+            # width_shift_range=0.2,
+            # height_shift_range=0.2,
+            # shear_range=0.2,
+            # zoom_range=0.2
         )
         test_datagen = ImageDataGenerator(rescale=1./255)
 
@@ -156,15 +159,15 @@ class DataGenerator:
             classes=self.cur_charset
         )
 
-        validation_generator = test_datagen.flow_from_directory( 
-            # 验证集是在训练过程中做测试用,所以用的是test_datagen训练集的数据生成器, 没有做增强
-            validation_dir,
-            target_size=targetSize,
-            batch_size=batchSize,
-            class_mode='categorical',
-            color_mode='grayscale',
-            classes=self.cur_charset
-        )
+        # validation_generator = test_datagen.flow_from_directory( 
+        #     # 验证集是在训练过程中做测试用,所以用的是test_datagen训练集的数据生成器, 没有做增强
+        #     validation_dir,
+        #     target_size=targetSize,
+        #     batch_size=batchSize,
+        #     class_mode='categorical',
+        #     color_mode='grayscale',
+        #     classes=self.cur_charset
+        # )
         test_generator = test_datagen.flow_from_directory(
             test_dir,
             target_size=targetSize,
@@ -174,7 +177,7 @@ class DataGenerator:
             classes=self.cur_charset
         )
 
-        return train_generator, validation_generator, test_generator
+        return train_generator, test_generator
 
 # test = DataGenerator()
 
