@@ -21,7 +21,7 @@ model_path = 'char_recognition.h5'
 # validationRate 验证集的比例
 # pickedNumber: 每一个汉字训练集里取出多少图片(每一个总共有240个) 
 # batch_size:每一个批的大小
-def train(model, initial_lr = 0.001, img_size = (64, 64), charset_size=3755, validationRate = 0.3, pickedNumber = 240, batch_size = 1024):
+def train(model, initial_lr = 0.001, img_size = (64, 64), charset_size=3755, validationRate = 0.3, pickedNumber = 240, batch_size = 2024):
     dg = DataGenerator.DataGenerator()
     # train_sample_count = dg.pick_small_dataset(char_number=charset_size, picked_number=pickedNumber, validation_rate=validationRate)
     train_generator, test_generator = dg.data_gen(batchSize=batch_size)
@@ -77,14 +77,21 @@ def display(history):
     
 # 注意这里的charset_size一定要与 train里的charset_size相同
 
-def build(model_type = None, img_shape=(64, 64, 1), charset_size=3755):
+def build(model_type = None, img_shape=(64, 64, 3), charset_size=3755):
     if model_type == 'resnet50':
-        base_model = ResNet50(include_top=False, weights=None)
-        base_model = models.Sequential(input = base_model.input, output=base_model.get_layer(index=175).output)
+        # base_model = ResNet50(include_top=False, weights=None)
+        # base_model = models.Sequential(input = base_model.input, output=base_model.get_layer(index=175).output)
 
-        base_model.add(layers.Dropout(0.3))
-        base_model.add(layers.Dense(512, activation='relu'))
-        base_model.add(layers.Dense(charset_size, activation='softmax'))
+        # base_model.add(layers.Dropout(0.3))
+        # base_model.add(layers.Dense(512, activation='relu'))
+        # base_model.add(layers.Dense(charset_size, activation='softmax'))
+        # return base_model
+
+        base_model = ResNet50(
+            weights = None,
+            classes = charset_size,
+            input_shape=img_shape
+        )
         return base_model
     elif model_type == 'vgg16':
         base_model = VGG16(include_top=True, weights=None)
@@ -133,7 +140,7 @@ def build(model_type = None, img_shape=(64, 64, 1), charset_size=3755):
 
 
 
-model = build()
+model = build(model_type='resnet50')
 test_generator, _steps = train(model)
 
 test_loss, test_acc = model.evaluate(test_generator, steps=_steps)

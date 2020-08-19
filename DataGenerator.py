@@ -155,7 +155,7 @@ class DataGenerator:
             target_size=targetSize,
             batch_size=batchSize,
             class_mode='categorical',
-            color_mode='grayscale',
+            # color_mode='grayscale',
             classes=self.cur_charset
         )
 
@@ -173,7 +173,7 @@ class DataGenerator:
             target_size=targetSize,
             batch_size=batchSize,
             class_mode='categorical',
-            color_mode='grayscale',
+            # color_mode='grayscale',
             classes=self.cur_charset
         )
 
